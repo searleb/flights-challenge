@@ -1,7 +1,9 @@
 const express = require('express')
+const cors = require('cors')
 
 app = express()
 app.use(express.json())
+app.use(cors())
 
 // express.json() middleware throws an error if the parse fails.
 // To return { error: 'Error parsing JSON' } as per challenge,
