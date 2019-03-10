@@ -10,7 +10,31 @@ app.get('/', (req, res) => {
 })
 
 app.post('/flights', (req, res) => {
-  console.log(req.body)
+  if (req.body.flights) {
+    const flights = req.body.flights;
+    const filteredFlights = flights
+        // code shares do not = QF 
+        // but we're returning flights that are not codes shares
+        // which would be all QF flights 🤔 double negatives!
+      .filter(flight => flight.airline === 'QF')
+      .filter(flight => flight.arrival.airport === 'SYD' || flight.departure.airport === 'SYD')
+      .map(flight => ({
+        flight: `${flight.airline}${flight.flightNumber}`,
+        origin: flight.departure.airport,
+        destination: flight.arrival.airport,
+        departureTime: flight.departure.scheduled,
+      }))
+
+      const response = {
+        flights: filteredFlights
+      }
+
+    res.send(response)
+    
+  } else {
+    res.status(422).send('Missing flights array')
+  }
+
 })
 
 app.get('*', (req, res) => {
