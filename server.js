@@ -3,7 +3,19 @@ const express = require('express')
 app = express()
 app.use(express.json())
 
-const PORT = 3000
+// express.json() middleware throws an error if the parse fails.
+// To return { error: 'Error parsing JSON' } as per challenge,
+// we're creating a new middleware to catch the error thrown 
+// from express.json()
+app.use((error, req, res, next) => {
+  if (error.type === 'entity.parse.failed') {
+    res.status(error.status).json({ error: 'Error parsing JSON' })
+  } else {
+    throw new Error(error)
+  }
+})
+
+const PORT = 3000;
 
 app.get('/', (req, res) => {
   return res.send(`<h1>Flights</h1>`)
@@ -13,9 +25,6 @@ app.post('/flights', (req, res) => {
   if (req.body.flights) {
     const flights = req.body.flights;
     const filteredFlights = flights
-        // code shares do not = QF 
-        // but we're returning flights that are not codes shares
-        // which would be all QF flights 🤔 double negatives!
       .filter(flight => flight.airline === 'QF')
       .filter(flight => flight.arrival.airport === 'SYD' || flight.departure.airport === 'SYD')
       .map(flight => ({
@@ -25,20 +34,19 @@ app.post('/flights', (req, res) => {
         departureTime: flight.departure.scheduled,
       }))
 
-      const response = {
-        flights: filteredFlights
-      }
+    const response = {
+      flights: filteredFlights
+    }
 
-    res.send(response)
+    res.json(response)
     
   } else {
-    res.status(422).send('Missing flights array')
+    res.status(422).json({ error: 'Missing flights array.' })
   }
-
 })
 
 app.get('*', (req, res) => {
-  return res.status(400).send(`<h1>404 Not Found</h1>`)
+  return res.status(404).send(`<h1>404 Not Found</h1>`)
 })
 
 app.listen(PORT, () => {
