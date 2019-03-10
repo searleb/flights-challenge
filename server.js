@@ -51,6 +51,6 @@ app.get('*', (req, res) => {
   return res.status(404).send(`<h1>404 Not Found</h1>`)
 })
 
-app.listen(PORT, () => {
+app.listen(process.env.PORT || PORT, () => {
   console.log(`Flights server running on port: ${PORT}`)
 })
